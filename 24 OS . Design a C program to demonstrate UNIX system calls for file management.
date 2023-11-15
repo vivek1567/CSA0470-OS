@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 1024
+
+int main() {
+    int fileDescriptor;
+    ssize_t bytesRead, bytesWritten;
+    char buffer[BUFFER_SIZE];
+
+    fileDescriptor = open("example.txt", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+    if (fileDescriptor == -1) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    const char *dataToWrite = "Hello, this is a test.\n";
+    bytesWritten = write(fileDescriptor, dataToWrite, strlen(dataToWrite));
+
+    if (bytesWritten == -1) {
+        perror("Error writing to file");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Successfully wrote %zd bytes to the file.\n", bytesWritten);
+
+    if (close(fileDescriptor) == -1) {
+        perror("Error closing file");
+        exit(EXIT_FAILURE);
+    }
+
+    fileDescriptor = open("example.txt", O_RDONLY);
+
+    if (fileDescriptor == -1) {
+        perror("Error opening file for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    bytesRead = read(fileDescriptor, buffer, BUFFER_SIZE);
+
+    if (bytesRead == -1) {
+        perror("Error reading from file");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Read %zd bytes from the file:\n%s", bytesRead, buffer);
+
+    if (close(fileDescriptor) == -1) {
+        perror("Error closing file");
+        exit(EXIT_FAILURE);
+    }
+
+    return 0;
+}
