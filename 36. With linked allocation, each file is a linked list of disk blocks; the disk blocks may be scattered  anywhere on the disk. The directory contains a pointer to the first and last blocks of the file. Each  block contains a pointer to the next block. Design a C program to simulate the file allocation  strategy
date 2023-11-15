@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_BLOCKS 100
+
+struct Block {
+    char data[50];
+    int nextBlock;
+};
+
+struct File {
+    int firstBlock;
+    int lastBlock;
+};
+
+void writeBlock(FILE *file, void *block, int size) {
+    fwrite(block, size, 1, file);
+}
+
+void readBlock(FILE *file, void *block, int size) {
+    fread(block, size, 1, file);
+}
+
+void writeFile(FILE *file, struct File *fileData, struct Block blocks[], int fileSize) {
+    writeBlock(file, fileData, sizeof(struct File));
+    for (int i = 0; i < MAX_BLOCKS; ++i) {
+        writeBlock(file, &blocks[i], sizeof(struct Block));
+    }
+}
+
+void readFile(FILE *file, struct File *fileData, struct Block blocks[], int fileSize) {
+    readBlock(file, fileData, sizeof(struct File));
+    for (int i = 0; i < MAX_BLOCKS; ++i) {
+        readBlock(file, &blocks[i], sizeof(struct Block));
+    }
+}
+
+int main() {
+    FILE *file;
+    struct File myFile;
+    struct Block myBlocks[MAX_BLOCKS];
+    int fileSize = sizeof(struct File) + MAX_BLOCKS * sizeof(struct Block);
+
+    for (int i = 0; i < MAX_BLOCKS; ++i) {
+        sprintf(myBlocks[i].data, "Data for Block %d", i + 1);
+        myBlocks[i].nextBlock = i + 1;
+    }
+    myBlocks[MAX_BLOCKS - 1].nextBlock = -1;
+
+    myFile.firstBlock = 0;
+    myFile.lastBlock = MAX_BLOCKS - 1;
+
+    file = fopen("linked_allocation.bin", "wb");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    writeFile(file, &myFile, myBlocks, fileSize);
+
+    fclose(file);
+
+    file = fopen("linked_allocation.bin", "rb");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    readFile(file, &myFile, myBlocks, fileSize);
+
+    int currentBlock = myFile.firstBlock;
+
+    while (currentBlock != -1) {
+        printf("Data: %s\n", myBlocks[currentBlock].data);
+        currentBlock = myBlocks[currentBlock].nextBlock;
+    }
+
+    fclose(file);
+
+    return 0;
+}
