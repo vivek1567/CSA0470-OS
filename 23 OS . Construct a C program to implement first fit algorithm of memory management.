@@ -1,0 +1,63 @@
+#include <stdio.h>
+
+#define MAX_BLOCKS 50
+
+struct MemoryBlock {
+    int id;
+    int size;
+    int allocated;
+};
+
+void initializeBlocks(struct MemoryBlock blocks[], int numBlocks) {
+    for (int i = 0; i < numBlocks; ++i) {
+        blocks[i].id = i + 1;
+        blocks[i].allocated = 0;
+    }
+}
+
+void displayBlocks(struct MemoryBlock blocks[], int numBlocks) {
+    printf("\nMemory Blocks:\n");
+    printf("ID\tSize\tStatus\n");
+    for (int i = 0; i < numBlocks; ++i) {
+        printf("%d\t%d\t%s\n", blocks[i].id, blocks[i].size,
+               blocks[i].allocated ? "Allocated" : "Free");
+    }
+    printf("\n");
+}
+
+void allocateFirstFit(struct MemoryBlock blocks[], int numBlocks, int processSize) {
+    for (int i = 0; i < numBlocks; ++i) {
+        if (blocks[i].allocated == 0 && blocks[i].size >= processSize) {
+            blocks[i].allocated = 1;
+            printf("Memory allocated successfully. Block ID: %d\n", blocks[i].id);
+            return;
+        }
+    }
+    printf("Memory allocation failed. No suitable block found.\n");
+}
+
+int main() {
+    int numBlocks;
+    printf("Enter the number of memory blocks: ");
+    scanf("%d", &numBlocks);
+
+    struct MemoryBlock blocks[MAX_BLOCKS];
+
+    initializeBlocks(blocks, numBlocks);
+    displayBlocks(blocks, numBlocks);
+
+    int numProcesses;
+    printf("Enter the number of processes: ");
+    scanf("%d", &numProcesses);
+
+    for (int i = 0; i < numProcesses; ++i) {
+        int processSize;
+        printf("Enter size of process %d: ", i + 1);
+        scanf("%d", &processSize);
+
+        allocateFirstFit(blocks, numBlocks, processSize);
+        displayBlocks(blocks, numBlocks);
+    }
+
+    return 0;
+}
