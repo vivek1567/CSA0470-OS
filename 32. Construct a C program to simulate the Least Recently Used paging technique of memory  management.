@@ -1,0 +1,96 @@
+#include <stdio.h>
+
+#define FRAME_SIZE 3
+#define PAGE_SIZE 10
+
+void printFrames(int frames[], int frameCount) {
+    for (int i = 0; i < frameCount; ++i) {
+        if (frames[i] == -1) {
+            printf("[ ] ");
+        } else {
+            printf("[%d] ", frames[i]);
+        }
+    }
+    printf("\n");
+}
+
+int isPageInFrames(int frames[], int frameCount, int page) {
+    for (int i = 0; i < frameCount; ++i) {
+        if (frames[i] == page) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void updateFrameOrder(int frames[], int frameOrder[], int frameCount, int index) {
+    for (int i = 0; i < frameCount; ++i) {
+        if (i == index) {
+            frameOrder[i] = 0;
+        } else {
+            frameOrder[i]++;
+        }
+    }
+}
+
+int findLRUIndex(int frameOrder[], int frameCount) {
+    int max = frameOrder[0];
+    int index = 0;
+
+    for (int i = 1; i < frameCount; ++i) {
+        if (frameOrder[i] > max) {
+            max = frameOrder[i];
+            index = i;
+        }
+    }
+
+    return index;
+}
+
+void lru(int pages[], int pageCount) {
+    int frames[FRAME_SIZE];
+    int frameOrder[FRAME_SIZE];
+    int frameCount = 0;
+    int pageFaults = 0;
+
+    for (int i = 0; i < FRAME_SIZE; ++i) {
+        frames[i] = -1;
+        frameOrder[i] = 0;
+    }
+
+    for (int i = 0; i < pageCount; ++i) {
+        printf("Page %d -> ", pages[i]);
+
+        if (!isPageInFrames(frames, frameCount, pages[i])) {
+            if (frameCount < FRAME_SIZE) {
+                frames[frameCount++] = pages[i];
+            } else {
+                int lruIndex = findLRUIndex(frameOrder, frameCount);
+                frames[lruIndex] = pages[i];
+                updateFrameOrder(frames, frameOrder, frameCount, lruIndex);
+            }
+            pageFaults++;
+            printFrames(frames, FRAME_SIZE);
+        } else {
+            int pageIndex;
+            for (pageIndex = 0; pageIndex < frameCount; ++pageIndex) {
+                if (frames[pageIndex] == pages[i]) {
+                    break;
+                }
+            }
+            updateFrameOrder(frames, frameOrder, frameCount, pageIndex);
+            printf("No page fault.\n");
+        }
+    }
+
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int pages[] = {2, 3, 2, 1, 5, 2, 4, 5, 3, 2, 5, 2};
+    int pageCount = sizeof(pages) / sizeof(pages[0]);
+
+    lru(pages, pageCount);
+
+    return 0;
+}
