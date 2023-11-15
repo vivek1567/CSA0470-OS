@@ -1,0 +1,55 @@
+$ ls -l
+-rw-r--r-- 1 owner group 4096 Nov 15 12:00 example.txt
+
+
+
+
+
+#include <stdio.h>
+#include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
+
+void displayPermissions(mode_t mode) {
+    printf("File Permissions: ");
+    printf((S_ISDIR(mode)) ? "d" : "-");
+    printf((mode & S_IRUSR) ? "r" : "-");
+    printf((mode & S_IWUSR) ? "w" : "-");
+    printf((mode & S_IXUSR) ? "x" : "-");
+    printf((mode & S_IRGRP) ? "r" : "-");
+    printf((mode & S_IWGRP) ? "w" : "-");
+    printf((mode & S_IXGRP) ? "x" : "-");
+    printf((mode & S_IROTH) ? "r" : "-");
+    printf((mode & S_IWOTH) ? "w" : "-");
+    printf((mode & S_IXOTH) ? "x" : "-");
+    printf("\n");
+}
+
+void displayFileInfo(const char *filename) {
+    struct stat fileInfo;
+    stat(filename, &fileInfo);
+
+    displayPermissions(fileInfo.st_mode);
+
+    printf("Number of hard links: %lu\n", (unsigned long)fileInfo.st_nlink);
+
+    struct passwd *ownerInfo = getpwuid(fileInfo.st_uid);
+    printf("Owner: %s\n", ownerInfo ? ownerInfo->pw_name : "Unknown");
+
+    struct group *groupInfo = getgrgid(fileInfo.st_gid);
+    printf("Group: %s\n", groupInfo ? groupInfo->gr_name : "Unknown");
+
+    printf("File Size: %lu bytes\n", (unsigned long)fileInfo.st_size);
+
+    printf("Last Modification Time: %s", ctime(&fileInfo.st_mtime));
+}
+
+int main() {
+    const char *filename = "example.txt";
+    
+    printf("File Information for: %s\n", filename);
+    displayFileInfo(filename);
+
+    return 0;
+}
