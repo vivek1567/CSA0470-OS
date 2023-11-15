@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define BUFFER_SIZE 1024
+
+int main() {
+    FILE *file;
+    char buffer[BUFFER_SIZE];
+
+    file = fopen("example.txt", "w");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    const char *dataToWrite = "Hello, this is a test.\n";
+    fwrite(dataToWrite, sizeof(char), strlen(dataToWrite), file);
+
+    printf("Successfully wrote to the file.\n");
+
+    fclose(file);
+
+    file = fopen("example.txt", "r");
+
+    if (file == NULL) {
+        perror("Error opening file for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    fread(buffer, sizeof(char), BUFFER_SIZE, file);
+
+    printf("Read from the file:\n%s", buffer);
+
+    fclose(file);
+
+    return 0;
+}
