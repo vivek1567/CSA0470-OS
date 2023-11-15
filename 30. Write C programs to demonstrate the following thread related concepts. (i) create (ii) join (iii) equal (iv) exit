@@ -1,0 +1,108 @@
+ (i) Create:
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+void *printMessage(void *arg) {
+    printf("Thread message: %s\n", (char *)arg);
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread;
+    const char *message = "Hello, I am a thread!";
+    
+    pthread_create(&thread, NULL, printMessage, (void *)message);
+
+    // Wait for the thread to finish
+    pthread_join(thread, NULL);
+
+    return 0;
+}
+```
+
+### (ii) Join:
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+void *printNumbers(void *arg) {
+    for (int i = 1; i <= 5; ++i) {
+        printf("%d ", i);
+    }
+    printf("\n");
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread;
+
+    pthread_create(&thread, NULL, printNumbers, NULL);
+
+    // Wait for the thread to finish
+    pthread_join(thread, NULL);
+
+    printf("Main thread continues execution.\n");
+
+    return 0;
+}
+```
+
+### (iii) Equal:
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+void *printMessage(void *arg) {
+    pthread_t callingThread = pthread_self();
+    pthread_t *passedThread = (pthread_t *)arg;
+
+    if (pthread_equal(callingThread, *passedThread)) {
+        printf("Threads are equal.\n");
+    } else {
+        printf("Threads are not equal.\n");
+    }
+
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread;
+
+    pthread_create(&thread, NULL, printMessage, (void *)&thread);
+
+    // Wait for the thread to finish
+    pthread_join(thread, NULL);
+
+    return 0;
+}
+```
+
+### (iv) Exit:
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+void *printMessage(void *arg) {
+    printf("Thread message: %s\n", (char *)arg);
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t thread;
+    const char *message = "Hello, I am a thread!";
+    
+    pthread_create(&thread, NULL, printMessage, (void *)message);
+
+    // Wait for the thread to finish
+    pthread_join(thread, NULL);
+
+    printf("Main thread continues execution.\n");
+
+    pthread_exit(NULL);
+}
+```
