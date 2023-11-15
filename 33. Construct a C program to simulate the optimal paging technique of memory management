@@ -1,0 +1,90 @@
+#include <stdio.h>
+
+#define FRAME_SIZE 3
+#define PAGE_SIZE 10
+
+void printFrames(int frames[], int frameCount) {
+    for (int i = 0; i < frameCount; ++i) {
+        if (frames[i] == -1) {
+            printf("[ ] ");
+        } else {
+            printf("[%d] ", frames[i]);
+        }
+    }
+    printf("\n");
+}
+
+int isPageInFrames(int frames[], int frameCount, int page) {
+    for (int i = 0; i < frameCount; ++i) {
+        if (frames[i] == page) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int findOptimalIndex(int pages[], int startIndex, int frameCount, int futurePages[], int futurePageCount) {
+    int index = -1;
+    int farthest = -1;
+
+    for (int i = 0; i < frameCount; ++i) {
+        int page = pages[startIndex];
+        int futureIndex = -1;
+
+        for (int j = startIndex + 1; j < futurePageCount; ++j) {
+            if (futurePages[j] == page) {
+                futureIndex = j;
+                break;
+            }
+        }
+
+        if (futureIndex == -1) {
+            return i;
+        }
+
+        if (futureIndex > farthest) {
+            farthest = futureIndex;
+            index = i;
+        }
+    }
+
+    return index;
+}
+
+void optimal(int pages[], int pageCount) {
+    int frames[FRAME_SIZE];
+    int frameCount = 0;
+    int pageFaults = 0;
+
+    for (int i = 0; i < FRAME_SIZE; ++i) {
+        frames[i] = -1;
+    }
+
+    for (int i = 0; i < pageCount; ++i) {
+        printf("Page %d -> ", pages[i]);
+
+        if (!isPageInFrames(frames, frameCount, pages[i])) {
+            if (frameCount < FRAME_SIZE) {
+                frames[frameCount++] = pages[i];
+            } else {
+                int optimalIndex = findOptimalIndex(pages, i, frameCount, pages, pageCount);
+                frames[optimalIndex] = pages[i];
+            }
+            pageFaults++;
+            printFrames(frames, FRAME_SIZE);
+        } else {
+            printf("No page fault.\n");
+        }
+    }
+
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int pages[] = {2, 3, 2, 1, 5, 2, 4, 5, 3, 2, 5, 2};
+    int pageCount = sizeof(pages) / sizeof(pages[0]);
+
+    optimal(pages, pageCount);
+
+    return 0;
+}
