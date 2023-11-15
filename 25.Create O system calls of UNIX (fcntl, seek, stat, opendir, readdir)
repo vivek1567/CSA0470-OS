@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+int main() {
+    int fileDescriptor, newFileDescriptor;
+    off_t offset;
+    struct stat fileStat;
+    struct dirent *dirEntry;
+    DIR *directory;
+
+    fileDescriptor = open("example.txt", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+    if (fileDescriptor == -1) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    const char *dataToWrite = "Hello, this is a test.\n";
+    write(fileDescriptor, dataToWrite, strlen(dataToWrite));
+
+    close(fileDescriptor);
+
+    fileDescriptor = open("example.txt", O_RDONLY);
+
+    if (fileDescriptor == -1) {
+        perror("Error opening file for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    offset = lseek(fileDescriptor, 0, SEEK_END);
+    printf("File size: %lld bytes\n", (long long)offset);
+
+    if (fstat(fileDescriptor, &fileStat) == -1) {
+        perror("Error getting file status");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File inode: %llu\n", (unsigned long long)fileStat.st_ino);
+
+    close(fileDescriptor);
+
+    directory = opendir(".");
+    if (directory == NULL) {
+        perror("Error opening directory");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Contents of the current directory:\n");
+    while ((dirEntry = readdir(directory)) != NULL) {
+        printf("%s\n", dirEntry->d_name);
+    }
+
+    closedir(directory);
+
+    return 0;
+}
