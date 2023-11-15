@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_RECORDS 100
+
+struct Record {
+    int recordID;
+    char data[50];
+};
+
+void writeRecord(FILE *file, struct Record *record) {
+    fwrite(record, sizeof(struct Record), 1, file);
+}
+
+void readRecords(FILE *file) {
+    struct Record record;
+
+    rewind(file);
+
+    while (fread(&record, sizeof(struct Record), 1, file) == 1) {
+        printf("Record ID: %d, Data: %s\n", record.recordID, record.data);
+    }
+}
+
+int main() {
+    FILE *file;
+    struct Record records[MAX_RECORDS];
+
+    file = fopen("file_records.bin", "wb");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < MAX_RECORDS; ++i) {
+        records[i].recordID = i + 1;
+        sprintf(records[i].data, "Data for Record %d", i + 1);
+        writeRecord(file, &records[i]);
+    }
+
+    fclose(file);
+
+    file = fopen("file_records.bin", "rb");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    readRecords(file);
+
+    fclose(file);
+
+    return 0;
+}
